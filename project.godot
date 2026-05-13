@@ -8,10 +8,6 @@
 
 config_version=5
 
-[Noctua]
-
-AppToken=""
-
 [application]
 
 config/name="godot-noctua-app"
@@ -22,7 +18,7 @@ config/run/main_scene="res://scenes/main.tscn"
 
 [autoload]
 
-adjust="*res://scripts/noctua.gd"
+adjust="*res://sdk/gd/noctua.gd"
 
 [display]
 

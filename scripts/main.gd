@@ -3,7 +3,7 @@ extends Control
 # ── Color Palette ──────────────────────────────────────────────────────────
 const COL_BG        := Color(0.051, 0.051, 0.102)       # #0D0D1A
 const COL_CARD      := Color(0.082, 0.082, 0.157)       # #151528
-const COL_HEADER_BG := Color(0.071, 0.055, 0.176)       # #12 0E2D
+const COL_HEADER_BG := Color(0.071, 0.055, 0.176)       # #120E2D
 const COL_ACCENT    := Color(0.424, 0.278, 1.000)       # #6C47FF
 const COL_ACCENT_DK := Color(0.314, 0.196, 0.784)       # #5032C8
 const COL_TEXT      := Color(0.886, 0.906, 0.941)       # #E2E8F0
@@ -23,14 +23,9 @@ const BTN_R     := 8
 const S_PAD     := 16
 const MAX_LOG   := 60
 
-# ── State ──────────────────────────────────────────────────────────────────
-var _sdk_ready := false
-
 # ── UI References ──────────────────────────────────────────────────────────
 var _status_dot   : ColorRect
 var _status_label : Label
-var _token_input  : LineEdit
-var _prod_toggle  : CheckButton
 var _rev_event    : LineEdit
 var _rev_amount   : LineEdit
 var _rev_currency : OptionButton
@@ -54,15 +49,14 @@ func _ready() -> void:
 func _refresh_status() -> void:
 	if Engine.has_singleton("GodotNoctua"):
 		_set_status(COL_SUCCESS, "Native SDK Connected")
-		_sdk_ready = true
 	elif OS.has_feature("editor"):
 		_set_status(COL_WARNING, "Editor  —  SDK Inactive")
 	else:
 		_set_status(COL_ERROR, "Plugin Not Found")
 
 func _set_status(color: Color, text: String) -> void:
-	_status_dot.color   = color
-	_status_label.text  = text
+	_status_dot.color      = color
+	_status_label.text     = text
 	_status_label.modulate = color
 
 # ══════════════════════════════════════════════════════════════════════════
@@ -88,7 +82,6 @@ func _build_ui() -> void:
 	scroll.add_child(root)
 
 	_build_header(root)
-	_build_section_init(root)
 	_build_section_events(root)
 	_build_section_revenue(root)
 	_build_section_purchase(root)
@@ -119,9 +112,8 @@ func _build_header(p: VBoxContainer) -> void:
 	lv.add_theme_constant_override("separation", 3)
 	row.add_child(lv)
 
-	var title := _label("NOCTUA SDK", COL_TEXT, 22)
-	lv.add_child(title)
-	lv.add_child(_label("Analytics & Attribution Demo", COL_SUBTEXT, 12))
+	lv.add_child(_lbl("NOCTUA SDK", COL_TEXT, 22))
+	lv.add_child(_lbl("Analytics & Attribution Demo", COL_SUBTEXT, 12))
 
 	# status block
 	var sv := VBoxContainer.new()
@@ -136,39 +128,15 @@ func _build_header(p: VBoxContainer) -> void:
 	_status_dot.color = COL_WARNING
 	dot_wrap.add_child(_status_dot)
 
-	_status_label = _label("Checking...", COL_SUBTEXT, 10)
+	_status_label = _lbl("Checking...", COL_SUBTEXT, 10)
 	_status_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	sv.add_child(_status_label)
-
-# ── Initialize SDK ─────────────────────────────────────────────────────────
-
-func _build_section_init(p: VBoxContainer) -> void:
-	var vb := _section(p, "INITIALIZE SDK")
-
-	vb.add_child(_label("App Token", COL_SUBTEXT, 11))
-	vb.add_child(_vspace(4))
-	_token_input = _lineedit("Enter your Noctua App Token")
-	_token_input.secret = true
-	_token_input.secret_character = "•"
-	vb.add_child(_token_input)
-
-	vb.add_child(_vspace(10))
-
-	_prod_toggle = CheckButton.new()
-	_prod_toggle.text = "Production Mode"
-	_prod_toggle.button_pressed = false
-	_prod_toggle.add_theme_color_override("font_color", COL_TEXT)
-	_prod_toggle.add_theme_font_size_override("font_size", 13)
-	vb.add_child(_prod_toggle)
-
-	vb.add_child(_vspace(12))
-	vb.add_child(_btn_primary("Initialize SDK", _on_init_pressed))
 
 # ── Track Events ───────────────────────────────────────────────────────────
 
 func _build_section_events(p: VBoxContainer) -> void:
 	var vb := _section(p, "TRACK EVENTS")
-	vb.add_child(_label("Tap an event to send it", COL_SUBTEXT, 11))
+	vb.add_child(_lbl("Tap an event to send it", COL_SUBTEXT, 11))
 	vb.add_child(_vspace(8))
 
 	var events := [
@@ -194,7 +162,7 @@ func _build_section_events(p: VBoxContainer) -> void:
 		grid.add_child(btn)
 
 	vb.add_child(_vspace(10))
-	vb.add_child(_label("Custom Event", COL_SUBTEXT, 11))
+	vb.add_child(_lbl("Custom Event", COL_SUBTEXT, 11))
 	vb.add_child(_vspace(4))
 
 	var row := HBoxContainer.new()
@@ -214,7 +182,7 @@ func _build_section_events(p: VBoxContainer) -> void:
 func _build_section_revenue(p: VBoxContainer) -> void:
 	var vb := _section(p, "TRACK REVENUE")
 
-	vb.add_child(_label("Event Name", COL_SUBTEXT, 11))
+	vb.add_child(_lbl("Event Name", COL_SUBTEXT, 11))
 	vb.add_child(_vspace(4))
 	_rev_event = _lineedit("purchase")
 	_rev_event.text = "purchase"
@@ -230,14 +198,14 @@ func _build_section_revenue(p: VBoxContainer) -> void:
 	ac.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	ac.add_theme_constant_override("separation", 4)
 	row.add_child(ac)
-	ac.add_child(_label("Amount", COL_SUBTEXT, 11))
+	ac.add_child(_lbl("Amount", COL_SUBTEXT, 11))
 	_rev_amount = _lineedit("0.99")
 	ac.add_child(_rev_amount)
 
 	var cc := VBoxContainer.new()
 	cc.add_theme_constant_override("separation", 4)
 	row.add_child(cc)
-	cc.add_child(_label("Currency", COL_SUBTEXT, 11))
+	cc.add_child(_lbl("Currency", COL_SUBTEXT, 11))
 	_rev_currency = _option_currencies()
 	cc.add_child(_rev_currency)
 
@@ -249,13 +217,13 @@ func _build_section_revenue(p: VBoxContainer) -> void:
 func _build_section_purchase(p: VBoxContainer) -> void:
 	var vb := _section(p, "TRACK PURCHASE")
 
-	vb.add_child(_label("Order ID", COL_SUBTEXT, 11))
+	vb.add_child(_lbl("Order ID", COL_SUBTEXT, 11))
 	vb.add_child(_vspace(4))
 	_order_id = _lineedit("ORDER-%d" % randi_range(10000, 99999))
 	vb.add_child(_order_id)
 
 	vb.add_child(_vspace(10))
-	vb.add_child(_label("Amount (USD)", COL_SUBTEXT, 11))
+	vb.add_child(_lbl("Amount (USD)", COL_SUBTEXT, 11))
 	vb.add_child(_vspace(4))
 	_pur_amount = _lineedit("4.99")
 	vb.add_child(_pur_amount)
@@ -268,7 +236,7 @@ func _build_section_purchase(p: VBoxContainer) -> void:
 func _build_section_ad_revenue(p: VBoxContainer) -> void:
 	var vb := _section(p, "TRACK AD REVENUE")
 
-	vb.add_child(_label("Ad Network", COL_SUBTEXT, 11))
+	vb.add_child(_lbl("Ad Network", COL_SUBTEXT, 11))
 	vb.add_child(_vspace(4))
 	_ad_source = OptionButton.new()
 	for src in ["admob", "applovin", "ironsource", "unity_ads", "mopub", "vungle", "chartboost"]:
@@ -279,7 +247,7 @@ func _build_section_ad_revenue(p: VBoxContainer) -> void:
 	vb.add_child(_ad_source)
 
 	vb.add_child(_vspace(10))
-	vb.add_child(_label("Revenue (USD)", COL_SUBTEXT, 11))
+	vb.add_child(_lbl("Revenue (USD)", COL_SUBTEXT, 11))
 	vb.add_child(_vspace(4))
 	_ad_revenue = _lineedit("0.0025")
 	vb.add_child(_ad_revenue)
@@ -292,7 +260,7 @@ func _build_section_ad_revenue(p: VBoxContainer) -> void:
 func _build_section_session(p: VBoxContainer) -> void:
 	var vb := _section(p, "SESSION TAG")
 
-	vb.add_child(_label("Tag Name", COL_SUBTEXT, 11))
+	vb.add_child(_lbl("Tag Name", COL_SUBTEXT, 11))
 	vb.add_child(_vspace(4))
 
 	var row := HBoxContainer.new()
@@ -314,10 +282,10 @@ func _build_section_log(p: VBoxContainer) -> void:
 
 	var log_bg := PanelContainer.new()
 	var ls := StyleBoxFlat.new()
-	ls.bg_color          = COL_INPUT
-	ls.corner_radius_top_left     = 8
-	ls.corner_radius_top_right    = 8
-	ls.corner_radius_bottom_left  = 8
+	ls.bg_color                  = COL_INPUT
+	ls.corner_radius_top_left    = 8
+	ls.corner_radius_top_right   = 8
+	ls.corner_radius_bottom_left = 8
 	ls.corner_radius_bottom_right = 8
 	ls.border_width_left   = 1
 	ls.border_width_right  = 1
@@ -331,33 +299,20 @@ func _build_section_log(p: VBoxContainer) -> void:
 	log_bg.add_child(lm)
 
 	_log_rtl = RichTextLabel.new()
-	_log_rtl.bbcode_enabled          = true
-	_log_rtl.custom_minimum_size.y   = 220
-	_log_rtl.scroll_following        = true
-	_log_rtl.size_flags_vertical     = Control.SIZE_EXPAND_FILL
+	_log_rtl.bbcode_enabled         = true
+	_log_rtl.custom_minimum_size.y  = 220
+	_log_rtl.scroll_following       = true
+	_log_rtl.size_flags_vertical    = Control.SIZE_EXPAND_FILL
 	_log_rtl.add_theme_color_override("default_color", COL_TEXT)
 	_log_rtl.add_theme_font_size_override("normal_font_size", 11)
 	lm.add_child(_log_rtl)
 
 	vb.add_child(_vspace(8))
-
-	var clear_btn := _btn_secondary("Clear Log", _on_clear_log)
-	vb.add_child(clear_btn)
+	vb.add_child(_btn_secondary("Clear Log", _on_clear_log))
 
 # ══════════════════════════════════════════════════════════════════════════
 # EVENT HANDLERS
 # ══════════════════════════════════════════════════════════════════════════
-
-func _on_init_pressed() -> void:
-	var token := _token_input.text.strip_edges()
-	if token.is_empty():
-		_log("ERROR", "App Token is required", COL_ERROR)
-		return
-	var prod := _prod_toggle.button_pressed
-	adjust.init(token, prod)
-	_sdk_ready = true
-	_set_status(COL_SUCCESS, "SDK Initialized")
-	_log("INIT", "token=...%s  mode=%s" % [token.right(4), "prod" if prod else "sandbox"], COL_SUCCESS)
 
 func _on_event_pressed(event_name: String) -> void:
 	adjust.track_event(event_name)
@@ -431,10 +386,10 @@ func _section(parent: VBoxContainer, title: String) -> VBoxContainer:
 
 	var pc := PanelContainer.new()
 	var s  := StyleBoxFlat.new()
-	s.bg_color                  = COL_CARD
-	s.corner_radius_top_left    = S_RADIUS
-	s.corner_radius_top_right   = S_RADIUS
-	s.corner_radius_bottom_left = S_RADIUS
+	s.bg_color                   = COL_CARD
+	s.corner_radius_top_left     = S_RADIUS
+	s.corner_radius_top_right    = S_RADIUS
+	s.corner_radius_bottom_left  = S_RADIUS
 	s.corner_radius_bottom_right = S_RADIUS
 	s.border_width_left   = 1
 	s.border_width_right  = 1
@@ -451,15 +406,12 @@ func _section(parent: VBoxContainer, title: String) -> VBoxContainer:
 	vb.add_theme_constant_override("separation", 6)
 	inner.add_child(vb)
 
-	# accent section title
-	var t := _label(title, COL_ACCENT, 11)
-	vb.add_child(t)
+	vb.add_child(_lbl(title, COL_ACCENT, 11))
 
-	# thin divider
 	var sep := HSeparator.new()
 	var ds  := StyleBoxFlat.new()
-	ds.bg_color          = COL_BORDER
-	ds.content_margin_top = 0
+	ds.bg_color             = COL_BORDER
+	ds.content_margin_top    = 0
 	ds.content_margin_bottom = 0
 	sep.add_theme_stylebox_override("separator", ds)
 	vb.add_child(sep)
@@ -484,7 +436,6 @@ func _btn_primary(text: String, cb: Callable) -> Button:
 	btn.text = text
 	btn.custom_minimum_size.y = BTN_H
 	btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-
 	var n := _sbox_flat(COL_ACCENT, BTN_R)
 	var h := _sbox_flat(COL_ACCENT_DK, BTN_R)
 	btn.add_theme_stylebox_override("normal",  n)
@@ -500,7 +451,6 @@ func _btn_secondary(text: String, cb: Callable) -> Button:
 	btn.text = text
 	btn.custom_minimum_size.y = BTN_H
 	btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-
 	var n := _sbox_outline(COL_BORDER, Color.TRANSPARENT, BTN_R)
 	var h := _sbox_outline(COL_ACCENT, Color(COL_ACCENT.r, COL_ACCENT.g, COL_ACCENT.b, 0.15), BTN_R)
 	btn.add_theme_stylebox_override("normal",  n)
@@ -516,10 +466,9 @@ func _btn_accent(text: String, cb: Callable) -> Button:
 
 func _lineedit(placeholder: String) -> LineEdit:
 	var le := LineEdit.new()
-	le.placeholder_text        = placeholder
-	le.custom_minimum_size.y   = INPUT_H
-	le.size_flags_horizontal   = Control.SIZE_EXPAND_FILL
-
+	le.placeholder_text      = placeholder
+	le.custom_minimum_size.y = INPUT_H
+	le.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	var n := _sbox_outline_padded(COL_BORDER, COL_INPUT, 6, 12)
 	var f := _sbox_outline_padded(COL_ACCENT, COL_INPUT, 6, 12)
 	le.add_theme_stylebox_override("normal", n)
@@ -529,11 +478,12 @@ func _lineedit(placeholder: String) -> LineEdit:
 	le.add_theme_font_size_override("font_size", 13)
 	return le
 
-func _label(text: String, color: Color, size: int) -> Label:
+## Creates a Label. Parameter named `font_sz` to avoid shadowing Control.size.
+func _lbl(text: String, color: Color, font_sz: int) -> Label:
 	var l := Label.new()
 	l.text = text
 	l.add_theme_color_override("font_color", color)
-	l.add_theme_font_size_override("font_size", size)
+	l.add_theme_font_size_override("font_size", font_sz)
 	return l
 
 func _option_currencies() -> OptionButton:
