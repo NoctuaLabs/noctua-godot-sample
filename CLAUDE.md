@@ -19,11 +19,11 @@ scripts/
   noctua.gd              # Local Noctua helper / thin wrapper
 android/
   plugins/
-    GodotNoctua.gdap     # Android plugin descriptor
+	GodotNoctua.gdap     # Android plugin descriptor
 ios/
   plugins/
-    adjust/
-      adjust.gdip        # iOS plugin descriptor
+	adjust/
+	  adjust.gdip        # iOS plugin descriptor
 export_presets.cfg       # Godot export configs (Android + iOS)
 project.godot            # Project settings
 ```
