@@ -1,0 +1,12 @@
+# Godot 4+ specific ignores
+.godot/
+/android/
+
+# macOS
+.DS_Store
+
+# Google Services (e.g. APIs or Firebase)
+google-services.json
+
+# Noctua SDK config (contains app credentials, do not commit)
+noctuagg.json
