@@ -19,21 +19,21 @@ scripts/
 sdk/                           # git submodule → slabgames/godot-noctua (branch: fix/gdscript-api-alignment)
   gd/noctua.gd                 # GDScript autoload singleton (registered as "adjust")
   android-plugin/
-    src/…/GodotNoctua.java     # Android plugin bridge
-    build.gradle               # Gradle build (produces GodotNoctua.*.aar)
-    GodotNoctua.gdap           # Android plugin descriptor (SDK copy — not loaded by Godot editor)
+	src/…/GodotNoctua.java     # Android plugin bridge
+	build.gradle               # Gradle build (produces GodotNoctua.*.aar)
+	GodotNoctua.gdap           # Android plugin descriptor (SDK copy — not loaded by Godot editor)
   noctua/
-    adjust.mm / adjust.h       # iOS native bridge (legacy filenames)
-    adjust.gdip                # iOS plugin descriptor
-    AdjustSdk.framework/       # Pre-built Noctua iOS framework
+	adjust.mm / adjust.h       # iOS native bridge (legacy filenames)
+	adjust.gdip                # iOS plugin descriptor
+	AdjustSdk.framework/       # Pre-built Noctua iOS framework
 android/
   plugins/
-    GodotNoctua.gdap           # Android plugin descriptor (loaded by Godot editor)
-    GodotNoctua.release.aar    # Pre-built Android plugin binary
+	GodotNoctua.gdap           # Android plugin descriptor (loaded by Godot editor)
+	GodotNoctua.release.aar    # Pre-built Android plugin binary
 ios/
   plugins/
-    adjust/
-      adjust.gdip              # iOS plugin descriptor (loaded by Godot editor)
+	adjust/
+	  adjust.gdip              # iOS plugin descriptor (loaded by Godot editor)
 export_presets.cfg             # Godot export configs (Android + iOS)
 project.godot                  # Project settings — autoload, display, rendering
 ```
