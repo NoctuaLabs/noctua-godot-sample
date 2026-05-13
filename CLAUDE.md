@@ -19,18 +19,20 @@ scripts/
   main.gd                      # Demo UI — wires buttons to Noctua SDK calls via `noctua.*`
 addons/
   GodotNoctua/
-    plugin.cfg                 # EditorPlugin descriptor (Godot 4.2+ v2 format)
-    GodotNoctuaPlugin.gd       # EditorPlugin — registers the export plugin on editor start
-    export_plugin.gd           # EditorExportPlugin — injects AAR + Maven deps at export time
+	plugin.cfg                 # EditorPlugin descriptor (Godot 4.2+ v2 format)
+	GodotNoctuaPlugin.gd       # EditorPlugin — registers the export plugin on editor start
+	export_plugin.gd           # EditorExportPlugin — injects AAR + Maven deps at export time
 sdk/                           # git submodule → slabgames/godot-noctua (fix/gdscript-api-alignment)
   gd/noctua.gd                 # GDScript autoload singleton (registered as "noctua")
   android-plugin/
-    src/…/GodotNoctua.java     # Android plugin bridge (v2)
-    src/…/AndroidManifest.xml  # Plugin v2 meta-data (org.godotengine.plugin.v2.GodotNoctua)
-    build.gradle               # Gradle build → GodotNoctua.*.aar
+	src/main/…/GodotNoctua.java     # Java plugin bridge (shared)
+	src/godot3/AndroidManifest.xml  # Godot 3.x: plugin v1 meta-data
+	src/godot4/AndroidManifest.xml  # Godot 4.x: plugin v2 meta-data
+	build.gradle                    # Gradle — godot3/godot4 product flavors
 android/
   plugins/
-    GodotNoctua.release.aar    # Pre-built Android plugin binary
+	GodotNoctua.godot4Release.aar   # Pre-built plugin for Godot 4.x (EditorExportPlugin uses this)
+	GodotNoctua.godot3.gdap         # Plugin descriptor for Godot 3.x projects
 export_presets.cfg             # Godot export configs (Android)
 project.godot                  # Project settings — autoload + EditorPlugin enabled
 ```
@@ -125,14 +127,15 @@ Both are listed in `.gitignore` and must never be committed.
 ```bash
 cd sdk/android-plugin
 
-# Requires the Godot AAR in sdk/android-plugin/libs/
-# Download from https://github.com/godotengine/godot/releases
-# File: godot-lib-<version>-template_release.aar
+# Download Godot AARs from https://github.com/godotengine/godot/releases
+# Place godot-lib-3.6.2.*.aar in libs/godot3/
+# Place godot-lib-4.x.x.*.aar in libs/godot4/
 
 JAVA_HOME="/Applications/Android Studio.app/Contents/jbr/Contents/Home" \
-  ./gradlew assembleRelease
+  ./gradlew assembleGodot4Release   # for Godot 4.x (used by this sample app)
+  # or: ./gradlew assembleRelease   # builds both godot3 + godot4 variants
 
-cp build/outputs/aar/GodotNoctua.release.aar ../../android/plugins/
+cp build/outputs/aar/GodotNoctua.godot4Release.aar ../../android/plugins/
 ```
 
 ### Run on device

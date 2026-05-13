@@ -9,8 +9,8 @@ func _supports_platform(platform: EditorExportPlatform) -> bool:
 
 func _get_android_libraries(platform: EditorExportPlatform, debug: bool) -> PackedStringArray:
 	if debug:
-		return PackedStringArray(["android/plugins/GodotNoctua.debug.aar"])
-	return PackedStringArray(["android/plugins/GodotNoctua.release.aar"])
+		return PackedStringArray(["android/plugins/GodotNoctua.godot4Debug.aar"])
+	return PackedStringArray(["android/plugins/GodotNoctua.godot4Release.aar"])
 
 func _get_android_dependencies(platform: EditorExportPlatform, debug: bool) -> PackedStringArray:
 	return PackedStringArray([
