@@ -20,10 +20,6 @@ config/run/main_scene="res://scenes/main.tscn"
 
 noctua="*res://sdk/gd/noctua.gd"
 
-[editor_plugins]
-
-enabled=PackedStringArray("res://addons/GodotNoctua/plugin.cfg")
-
 [display]
 
 window/size/viewport_width=1080
@@ -31,6 +27,10 @@ window/size/viewport_height=1920
 window/stretch/mode="canvas_items"
 window/stretch/aspect="expand"
 window/handheld/orientation=1
+
+[editor_plugins]
+
+enabled=PackedStringArray("res://addons/GodotNoctua/plugin.cfg")
 
 [physics]
 
