@@ -10,3 +10,6 @@ google-services.json
 
 # Noctua SDK config (contains app credentials, do not commit)
 noctuagg.json
+
+# Claude Code
+.claude/
