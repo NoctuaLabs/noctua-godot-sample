@@ -18,7 +18,11 @@ config/run/main_scene="res://scenes/main.tscn"
 
 [autoload]
 
-adjust="*res://sdk/gd/noctua.gd"
+noctua="*res://sdk/gd/noctua.gd"
+
+[editor_plugins]
+
+enabled=PackedStringArray("res://addons/GodotNoctua/plugin.cfg")
 
 [display]
 

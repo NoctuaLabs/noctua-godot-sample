@@ -315,7 +315,7 @@ func _build_section_log(p: VBoxContainer) -> void:
 # ══════════════════════════════════════════════════════════════════════════
 
 func _on_event_pressed(event_name: String) -> void:
-	adjust.track_event(event_name)
+	noctua.track_event(event_name)
 	_log("EVENT", event_name, COL_ACCENT)
 
 func _on_custom_event_pressed() -> void:
@@ -323,7 +323,7 @@ func _on_custom_event_pressed() -> void:
 	if ev.is_empty():
 		_log("ERROR", "Event name cannot be empty", COL_ERROR)
 		return
-	adjust.track_event(ev)
+	noctua.track_event(ev)
 	_log("EVENT", ev, COL_ACCENT)
 
 func _on_revenue_pressed() -> void:
@@ -333,7 +333,7 @@ func _on_revenue_pressed() -> void:
 	if event.is_empty() or amount.is_empty():
 		_log("ERROR", "Event name and amount are required", COL_ERROR)
 		return
-	adjust.track_revenue(event, amount.to_float(), cur)
+	noctua.track_revenue(event, amount.to_float(), cur)
 	_log("REVENUE", "%s  %.4f %s" % [event, amount.to_float(), cur], COL_SUCCESS)
 
 func _on_purchase_pressed() -> void:
@@ -342,7 +342,7 @@ func _on_purchase_pressed() -> void:
 	if order.is_empty() or amount.is_empty():
 		_log("ERROR", "Order ID and amount are required", COL_ERROR)
 		return
-	adjust.track_purchase(order, amount, "USD", {})
+	noctua.track_purchase(order, amount, "USD", {})
 	_log("PURCHASE", "order=%s  amount=%s USD" % [order, amount], COL_SUCCESS)
 
 func _on_ad_revenue_pressed() -> void:
@@ -351,7 +351,7 @@ func _on_ad_revenue_pressed() -> void:
 	if revenue.is_empty():
 		_log("ERROR", "Revenue amount is required", COL_ERROR)
 		return
-	adjust.track_ad_revenue(source, revenue, "USD", {})
+	noctua.track_ad_revenue(source, revenue, "USD", {})
 	_log("AD_REV", "%s  %s USD" % [source, revenue], COL_WARNING)
 
 func _on_session_tag_pressed() -> void:
@@ -359,7 +359,7 @@ func _on_session_tag_pressed() -> void:
 	if tag.is_empty():
 		_log("ERROR", "Session tag cannot be empty", COL_ERROR)
 		return
-	adjust.set_session_tag(tag)
+	noctua.set_session_tag(tag)
 	_log("SESSION", "tag set: %s" % tag, COL_ACCENT)
 
 func _on_clear_log() -> void:

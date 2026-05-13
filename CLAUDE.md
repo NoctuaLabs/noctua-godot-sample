@@ -4,8 +4,9 @@
 
 A Godot 4 sample/test application for the Noctua SDK. It exercises event tracking, revenue tracking, IAP, ad revenue, and session management via the Noctua Godot plugin and serves as the integration reference for the SDK team.
 
-- **Godot**: 4.6.x
-- **Platforms**: Android · iOS
+- **Godot**: 4.2+ (plugin v2 format)
+- **Platform**: Android
+- **SDK**: `com.noctuagames.sdk:noctua-android-sdk:0.32.0` (via the `sdk/` submodule)
 
 ---
 
@@ -15,65 +16,82 @@ A Godot 4 sample/test application for the Noctua SDK. It exercises event trackin
 scenes/
   main.tscn                    # Main scene (portrait, 1080×1920)
 scripts/
-  main.gd                      # Demo UI — wires buttons to Noctua SDK calls
-sdk/                           # git submodule → slabgames/godot-noctua (branch: fix/gdscript-api-alignment)
-  gd/noctua.gd                 # GDScript autoload singleton (registered as "adjust")
+  main.gd                      # Demo UI — wires buttons to Noctua SDK calls via `noctua.*`
+addons/
+  GodotNoctua/
+    plugin.cfg                 # EditorPlugin descriptor (Godot 4.2+ v2 format)
+    GodotNoctuaPlugin.gd       # EditorPlugin — registers the export plugin on editor start
+    export_plugin.gd           # EditorExportPlugin — injects AAR + Maven deps at export time
+sdk/                           # git submodule → slabgames/godot-noctua (fix/gdscript-api-alignment)
+  gd/noctua.gd                 # GDScript autoload singleton (registered as "noctua")
   android-plugin/
-	src/…/GodotNoctua.java     # Android plugin bridge
-	build.gradle               # Gradle build (produces GodotNoctua.*.aar)
-	GodotNoctua.gdap           # Android plugin descriptor (SDK copy — not loaded by Godot editor)
-  noctua/
-	adjust.mm / adjust.h       # iOS native bridge (legacy filenames)
-	adjust.gdip                # iOS plugin descriptor
-	AdjustSdk.framework/       # Pre-built Noctua iOS framework
+    src/…/GodotNoctua.java     # Android plugin bridge (v2)
+    src/…/AndroidManifest.xml  # Plugin v2 meta-data (org.godotengine.plugin.v2.GodotNoctua)
+    build.gradle               # Gradle build → GodotNoctua.*.aar
 android/
   plugins/
-	GodotNoctua.gdap           # Android plugin descriptor (loaded by Godot editor)
-	GodotNoctua.release.aar    # Pre-built Android plugin binary
-ios/
-  plugins/
-	adjust/
-	  adjust.gdip              # iOS plugin descriptor (loaded by Godot editor)
-export_presets.cfg             # Godot export configs (Android + iOS)
-project.godot                  # Project settings — autoload, display, rendering
+    GodotNoctua.release.aar    # Pre-built Android plugin binary
+export_presets.cfg             # Godot export configs (Android)
+project.godot                  # Project settings — autoload + EditorPlugin enabled
 ```
 
-> The `sdk/` folder is a git submodule. After cloning, run `git submodule update --init` to populate it.
+> The `sdk/` folder is a git submodule. After cloning, run:
+> ```bash
+> git submodule update --init
+> ```
+
+---
+
+## Plugin Architecture (v2)
+
+This project uses the **Godot 4.2+ v2 plugin format**, replacing the deprecated `.gdap` file with an `EditorExportPlugin` addon:
+
+| Component | File | Role |
+|-----------|------|------|
+| EditorPlugin | `addons/GodotNoctua/GodotNoctuaPlugin.gd` | Loaded by Godot editor on startup (enabled in Project Settings → Plugins) |
+| EditorExportPlugin | `addons/GodotNoctua/export_plugin.gd` | Called at export time — injects the AAR and Maven dependency |
+| Java bridge | `sdk/android-plugin/…/GodotNoctua.java` | Runtime plugin, discovered via `AndroidManifest.xml` v2 meta-data |
+| AAR binary | `android/plugins/GodotNoctua.release.aar` | Bundled into the APK at export |
+
+The `export_plugin.gd` injects:
+- **Library**: `android/plugins/GodotNoctua.release.aar`
+- **Maven dep**: `com.noctuagames.sdk:noctua-android-sdk:0.32.0`
+- **Repos**: Google Maven + Maven Central
 
 ---
 
 ## GDScript API
 
-The SDK auto-registers as the `adjust` autoload singleton. No manual initialisation is needed — the SDK reads `noctuagg.json` from the project root automatically.
+The SDK auto-registers as the **`noctua`** autoload singleton. No manual initialisation is needed — the SDK reads `noctuagg.json` from the project root automatically.
 
 ```gdscript
 # ── Event Tracking ────────────────────────────────────────────────────────────
-adjust.track_event(event: String)
-adjust.track_event_with_params(event: String, params: Dictionary)
+noctua.track_event(event: String)
+noctua.track_event_with_params(event: String, params: Dictionary)
 
 # ── Revenue Tracking ──────────────────────────────────────────────────────────
-adjust.track_revenue(event: String, revenue: float, currency := "USD")
-adjust.track_purchase(order_id: String, amount: String, currency: String, payload: Dictionary)
-adjust.track_ad_revenue(ad_source: String, revenue: String, currency: String, params: Dictionary)
-adjust.track_custom_event_with_revenue(event_name: String, revenue: String, currency: String, payload: Dictionary)
+noctua.track_revenue(event: String, revenue: float, currency := "USD")
+noctua.track_purchase(order_id: String, amount: String, currency: String, payload: Dictionary)
+noctua.track_ad_revenue(ad_source: String, revenue: String, currency: String, params: Dictionary)
+noctua.track_custom_event_with_revenue(event_name: String, revenue: String, currency: String, payload: Dictionary)
 
 # ── Session ───────────────────────────────────────────────────────────────────
-adjust.set_session_tag(session_name: String)
-adjust.get_session_tag() -> String
-adjust.set_session_extra_params(params: Dictionary)
+noctua.set_session_tag(session_name: String)
+noctua.get_session_tag() -> String
+noctua.set_session_extra_params(params: Dictionary)
 
 # ── Experiments ───────────────────────────────────────────────────────────────
-adjust.set_experiment(experiment: String)
-adjust.get_experiment() -> String
-adjust.set_general_experiment(experiment: String)
-adjust.get_general_experiment(key: String) -> String
+noctua.set_experiment(experiment: String)
+noctua.get_experiment() -> String
+noctua.set_general_experiment(experiment: String)
+noctua.get_general_experiment(key: String) -> String
 
 # ── Network State ─────────────────────────────────────────────────────────────
-adjust.on_online()
-adjust.on_offline()
+noctua.on_online()
+noctua.on_offline()
 ```
 
-All calls are no-ops when running in the editor (no native plugin) — the expected desktop warning is:  
+All calls are no-ops in the editor (no native plugin). Expected desktop warning:
 `Noctua plugin not found! Running without native SDK.`
 
 ---
@@ -97,11 +115,10 @@ Both are listed in `.gitignore` and must never be committed.
 
 ### One-time setup
 
-1. In Godot: **Project → Export → Android** → install the custom build template.  
-   This generates `android/build/`.
+1. In Godot: **Project → Export → Android** → install the custom build template (generates `android/build/`).
 2. Copy `google-services.json` into `android/build/app/`.
-3. Ensure `android/plugins/GodotNoctua.gdap` references the correct AAR filename.
-4. Place a valid `noctuagg.json` in the project root.
+3. Place `noctuagg.json` in the project root.
+4. Enable the plugin: **Project → Project Settings → Plugins → GodotNoctua** → tick **Enable**.
 
 ### Rebuild the plugin AAR (when SDK changes)
 
@@ -122,24 +139,8 @@ cp build/outputs/aar/GodotNoctua.release.aar ../../android/plugins/
 
 Build via **Godot Export → Android** or:
 ```bash
-cd android/build
-./gradlew assembleDebug
+cd android/build && ./gradlew assembleDebug
 ```
-
----
-
-## iOS Build Setup
-
-1. Export from Godot to generate the Xcode project.
-2. Build the xcframework from `sdk/`:
-   ```bash
-   cd sdk
-   ./scripts/release_xcframework.sh adjust 4.0
-   # Output: bin/adjust.release.xcframework
-   ```
-3. Copy `adjust.release.xcframework` to `ios/plugins/adjust/`.
-4. Ensure `GoogleService-Info.plist` (iOS Firebase config) is added to the Xcode project.
-5. The `ios/plugins/adjust/adjust.gdip` descriptor references the framework and system dependencies.
 
 ---
 
@@ -149,9 +150,27 @@ cd android/build
 |---------|---------|
 | `git submodule update --init` | Populate `sdk/` after a fresh clone |
 | `git submodule update --remote` | Pull latest SDK changes from remote |
-| Commit inside `sdk/` then commit in root | Update the submodule pointer after SDK changes |
+| Commit inside `sdk/`, then commit in root | Update the submodule pointer after SDK changes |
 
-The submodule currently tracks branch `fix/gdscript-api-alignment` of `slabgames/godot-noctua`.
+The submodule tracks branch `fix/gdscript-api-alignment` of `slabgames/godot-noctua`.
+
+---
+
+## Maintenance — Keeping This File Current
+
+**Update this CLAUDE.md whenever:**
+
+| Change | Section to update |
+|--------|------------------|
+| New file or directory added | Repository Layout |
+| File or directory removed | Repository Layout |
+| New method added to `sdk/gd/noctua.gd` | GDScript API |
+| Method removed or signature changed | GDScript API |
+| Noctua Android SDK version bumped | Project Overview · export_plugin.gd dep string |
+| Build step changes | Android Build Setup |
+| Submodule branch changes | Repository Layout · Submodule Notes |
+| New config file required | Config Files table |
+| Plugin addon structure changes | Plugin Architecture table |
 
 ---
 
@@ -159,6 +178,7 @@ The submodule currently tracks branch `fix/gdscript-api-alignment` of `slabgames
 
 Manual workflow:
 1. Place `noctuagg.json` (with `"sandboxEnabled": true`) and `google-services.json` in the project root.
-2. Build and run on a physical Android device.
-3. Use the in-app UI to fire events (track event, track revenue, track purchase, track ad revenue, set session tag).
-4. Verify events appear in the Noctua dashboard.
+2. Enable the plugin: **Project → Project Settings → Plugins → GodotNoctua**.
+3. Build and run on a physical Android device.
+4. Use the in-app UI to fire: track event, track revenue, track purchase, track ad revenue, set session tag.
+5. Verify events appear in the Noctua dashboard.
