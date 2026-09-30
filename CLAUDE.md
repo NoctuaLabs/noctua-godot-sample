@@ -4,9 +4,9 @@
 
 A Godot 4 sample/test application for the Noctua SDK. It exercises event tracking, revenue tracking, IAP, ad revenue, and session management via the Noctua Godot plugin and serves as the integration reference for the SDK team.
 
-- **Godot**: 4.2+ (plugin v2 format)
+- **Godot**: 4.2+ (plugin v2 format); project last saved with 4.6.1 (`android/.build_version`)
 - **Platform**: Android
-- **SDK**: `com.noctuagames.sdk:noctua-android-sdk:0.32.0` (via the `sdk/` submodule)
+- **SDK**: `com.noctuagames.sdk:noctua-android-sdk:0.34.0` (via the `sdk/` submodule)
 
 ---
 
@@ -22,7 +22,7 @@ addons/
 	plugin.cfg                 # EditorPlugin descriptor (Godot 4.2+ v2 format)
 	GodotNoctuaPlugin.gd       # EditorPlugin — registers the export plugin on editor start
 	export_plugin.gd           # EditorExportPlugin — injects AAR + Maven deps at export time
-sdk/                           # git submodule → slabgames/godot-noctua (fix/gdscript-api-alignment)
+sdk/                           # git submodule → slabgames/godot-noctua (main)
   gd/noctua.gd                 # GDScript autoload singleton (registered as "noctua")
   android-plugin/
 	src/main/…/GodotNoctua.java     # Java plugin bridge (shared)
@@ -53,11 +53,11 @@ This project uses the **Godot 4.2+ v2 plugin format**, replacing the deprecated 
 | EditorPlugin | `addons/GodotNoctua/GodotNoctuaPlugin.gd` | Loaded by Godot editor on startup (enabled in Project Settings → Plugins) |
 | EditorExportPlugin | `addons/GodotNoctua/export_plugin.gd` | Called at export time — injects the AAR and Maven dependency |
 | Java bridge | `sdk/android-plugin/…/GodotNoctua.java` | Runtime plugin, discovered via `AndroidManifest.xml` v2 meta-data |
-| AAR binary | `android/plugins/GodotNoctua.release.aar` | Bundled into the APK at export |
+| AAR binary | `android/plugins/GodotNoctua.godot4Release.aar` | Bundled into the APK at export (debug and release) |
 
 The `export_plugin.gd` injects:
-- **Library**: `android/plugins/GodotNoctua.release.aar`
-- **Maven dep**: `com.noctuagames.sdk:noctua-android-sdk:0.32.0`
+- **Library**: `android/plugins/GodotNoctua.godot4Release.aar` (used for both debug and release exports)
+- **Maven dep**: `com.noctuagames.sdk:noctua-android-sdk:0.34.0` (must match `sdk/android-plugin/build.gradle`)
 - **Repos**: Google Maven + Maven Central
 
 ---
@@ -72,10 +72,9 @@ noctua.track_event(event: String)
 noctua.track_event_with_params(event: String, params: Dictionary)
 
 # ── Revenue Tracking ──────────────────────────────────────────────────────────
-noctua.track_revenue(event: String, revenue: float, currency := "USD")
 noctua.track_purchase(order_id: String, amount: String, currency: String, payload: Dictionary)
 noctua.track_ad_revenue(ad_source: String, revenue: String, currency: String, params: Dictionary)
-noctua.track_custom_event_with_revenue(event_name: String, revenue: String, currency: String, payload: Dictionary)
+noctua.track_custom_event_with_revenue(event_name: String, revenue: float, currency := "USD", payload := {})
 
 # ── Session ───────────────────────────────────────────────────────────────────
 noctua.set_session_tag(session_name: String)
@@ -155,7 +154,7 @@ cd android/build && ./gradlew assembleDebug
 | `git submodule update --remote` | Pull latest SDK changes from remote |
 | Commit inside `sdk/`, then commit in root | Update the submodule pointer after SDK changes |
 
-The submodule tracks branch `fix/gdscript-api-alignment` of `slabgames/godot-noctua`.
+The submodule tracks branch `main` of `slabgames/godot-noctua` (set via `branch = main` in `.gitmodules`).
 
 ---
 

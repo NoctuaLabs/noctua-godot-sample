@@ -333,7 +333,7 @@ func _on_revenue_pressed() -> void:
 	if event.is_empty() or amount.is_empty():
 		_log("ERROR", "Event name and amount are required", COL_ERROR)
 		return
-	noctua.track_revenue(event, amount.to_float(), cur)
+	noctua.track_custom_event_with_revenue(event, amount.to_float(), cur)
 	_log("REVENUE", "%s  %.4f %s" % [event, amount.to_float(), cur], COL_SUCCESS)
 
 func _on_purchase_pressed() -> void:
