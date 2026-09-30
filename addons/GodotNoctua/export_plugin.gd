@@ -9,11 +9,11 @@ func _supports_platform(platform: EditorExportPlatform) -> bool:
 
 func _get_android_libraries(platform: EditorExportPlatform, debug: bool) -> PackedStringArray:
 	# Only the release AAR is built; it is used for debug exports as well.
-	return PackedStringArray(["android/plugins/GodotNoctua.godot4Release.aar"])
+	return PackedStringArray(["res://android/plugins/GodotNoctua.godot4Release.aar"])
 
 func _get_android_dependencies(platform: EditorExportPlatform, debug: bool) -> PackedStringArray:
 	return PackedStringArray([
-		"com.noctuagames.sdk:noctua-android-sdk:0.34.0",
+		"com.noctuagames.sdk:noctua-android-sdk:0.35.1",
 	])
 
 func _get_android_dependencies_maven_repos(platform: EditorExportPlatform, debug: bool) -> PackedStringArray:

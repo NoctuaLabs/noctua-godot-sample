@@ -5,8 +5,9 @@
 A Godot 4 sample/test application for the Noctua SDK. It exercises event tracking, revenue tracking, IAP, ad revenue, and session management via the Noctua Godot plugin and serves as the integration reference for the SDK team.
 
 - **Godot**: 4.2+ (plugin v2 format); project last saved with 4.6.1 (`android/.build_version`)
-- **Platform**: Android
-- **SDK**: `com.noctuagames.sdk:noctua-android-sdk:0.34.0` (via the `sdk/` submodule)
+- **Platform**: Android + iOS
+- **SDK**: `com.noctuagames.sdk:noctua-android-sdk:0.35.1` (via the `sdk/` submodule)
+- **iOS SDK**: CocoaPods `NoctuaSDK 0.40.1` (installed after export by `sdk/ios-plugin/scripts/setup_xcode.sh`)
 
 ---
 
@@ -33,7 +34,10 @@ android/
   plugins/
 	GodotNoctua.godot4Release.aar   # Pre-built plugin for Godot 4.x (EditorExportPlugin uses this)
 	GodotNoctua.godot3.gdap         # Plugin descriptor for Godot 3.x projects
-export_presets.cfg             # Godot export configs (Android)
+ios/
+  plugins/GodotNoctua/          # iOS plugin: GodotNoctua.gdip + {debug,release}.xcframework (built by sdk/ios-plugin/scripts/build.sh 4.x)
+sdk/ios-plugin/                # iOS Objective-C++ bridge source, build + post-export scripts
+export_presets.cfg             # Godot export configs (Android, iOS)
 project.godot                  # Project settings — autoload + EditorPlugin enabled
 ```
 
@@ -54,10 +58,11 @@ This project uses the **Godot 4.2+ v2 plugin format**, replacing the deprecated 
 | EditorExportPlugin | `addons/GodotNoctua/export_plugin.gd` | Called at export time — injects the AAR and Maven dependency |
 | Java bridge | `sdk/android-plugin/…/GodotNoctua.java` | Runtime plugin, discovered via `AndroidManifest.xml` v2 meta-data |
 | AAR binary | `android/plugins/GodotNoctua.godot4Release.aar` | Bundled into the APK at export (debug and release) |
+| iOS plugin | `ios/plugins/GodotNoctua/GodotNoctua.gdip` | Links the GodotNoctua xcframework; registers the same `GodotNoctua` singleton as Android |
 
 The `export_plugin.gd` injects:
-- **Library**: `android/plugins/GodotNoctua.godot4Release.aar` (used for both debug and release exports)
-- **Maven dep**: `com.noctuagames.sdk:noctua-android-sdk:0.34.0` (must match `sdk/android-plugin/build.gradle`)
+- **Library**: `res://android/plugins/GodotNoctua.godot4Release.aar` (used for both debug and release exports; must be a `res://` path — relative paths resolve under `res://addons/`)
+- **Maven dep**: `com.noctuagames.sdk:noctua-android-sdk:0.35.1` (must match `sdk/android-plugin/build.gradle`)
 - **Repos**: Google Maven + Maven Central
 
 ---
@@ -104,7 +109,8 @@ These files contain credentials. Obtain from the Noctua team and place in the **
 | File | Purpose |
 |------|---------|
 | `noctuagg.json` | Noctua SDK config — `clientId`, `gameId`, Noctua tokens, AdMob/AppLovin ad unit IDs, IAA/IAP settings |
-| `google-services.json` | Firebase config — project number, OAuth client IDs, API key |
+| `google-services.json` | Firebase config (Android) — project number, OAuth client IDs, API key |
+| `GoogleService-Info.plist` | Firebase config (iOS) — bundle ID `com.noctuagames.ios.unitysdktest`, project `noctua-sdk-test` |
 
 Both are listed in `.gitignore` and must never be committed.
 
@@ -146,6 +152,16 @@ cd android/build && ./gradlew assembleDebug
 
 ---
 
+## iOS Build Setup
+
+1. Build the plugin (once per SDK change): `sdk/ios-plugin/scripts/build.sh 4.x`, then copy `sdk/ios-plugin/bin/4.x/GodotNoctua/` to `ios/plugins/GodotNoctua/`.
+2. Export with the **iOS** preset (Export Project Only, team `2TFDF8BB6J`, bundle `com.noctuagames.ios.unitysdktest`, min iOS 15.0):
+   ```bash
+   /Applications/Godot.app/Contents/MacOS/Godot --headless --path . --export-debug "iOS" build/ios/NoctuaGodotSample.ipa
+   ```
+3. Link NoctuaSDK: `sdk/ios-plugin/scripts/setup_xcode.sh build/ios .`
+4. Open `build/ios/NoctuaGodotSample.xcworkspace` and run on a device (Godot's simulator library is x86_64-only; iOS 26 simulators cannot run it).
+
 ## Submodule Notes
 
 | Command | Purpose |
@@ -173,6 +189,7 @@ The submodule tracks branch `main` of `NoctuaLabs/noctua-godot-sdk` (set via `br
 | Submodule branch changes | Repository Layout · Submodule Notes |
 | New config file required | Config Files table |
 | Plugin addon structure changes | Plugin Architecture table |
+| NoctuaSDK iOS pod version bumped | Project Overview · `setup_xcode.sh` DEFAULT_SDK_VERSION · `noctua_sdk_api.h` selectors |
 
 ---
 
@@ -181,6 +198,6 @@ The submodule tracks branch `main` of `NoctuaLabs/noctua-godot-sdk` (set via `br
 Manual workflow:
 1. Place `noctuagg.json` (with `"sandboxEnabled": true`) and `google-services.json` in the project root.
 2. Enable the plugin: **Project → Project Settings → Plugins → GodotNoctua**.
-3. Build and run on a physical Android device.
+3. Build and run on a physical Android device and/or iPhone (see iOS Build Setup).
 4. Use the in-app UI to fire: track event, track revenue, track purchase, track ad revenue, set session tag.
 5. Verify events appear in the Noctua dashboard.

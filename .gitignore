@@ -13,3 +13,9 @@ noctuagg.json
 
 # Claude Code
 .claude/
+
+# Firebase iOS config (do not commit)
+GoogleService-Info.plist
+
+# iOS export output
+/build/
