@@ -22,7 +22,7 @@ addons/
 	plugin.cfg                 # EditorPlugin descriptor (Godot 4.2+ v2 format)
 	GodotNoctuaPlugin.gd       # EditorPlugin — registers the export plugin on editor start
 	export_plugin.gd           # EditorExportPlugin — injects AAR + Maven deps at export time
-sdk/                           # git submodule → slabgames/godot-noctua (main)
+sdk/                           # git submodule → NoctuaLabs/noctua-godot-sdk (main)
   gd/noctua.gd                 # GDScript autoload singleton (registered as "noctua")
   android-plugin/
 	src/main/…/GodotNoctua.java     # Java plugin bridge (shared)
@@ -154,7 +154,7 @@ cd android/build && ./gradlew assembleDebug
 | `git submodule update --remote` | Pull latest SDK changes from remote |
 | Commit inside `sdk/`, then commit in root | Update the submodule pointer after SDK changes |
 
-The submodule tracks branch `main` of `slabgames/godot-noctua` (set via `branch = main` in `.gitmodules`).
+The submodule tracks branch `main` of `NoctuaLabs/noctua-godot-sdk` (set via `branch = main` in `.gitmodules`).
 
 ---
 
