@@ -1,4 +1,4 @@
 [submodule "sdk"]
 	path = sdk
-	url = git@github.com:NoctuaLabs/noctua-godot-sdk.git
+	url = https://github.com/NoctuaLabs/noctua-godot-sdk.git
 	branch = main
