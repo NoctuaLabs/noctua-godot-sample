@@ -38,6 +38,7 @@ ios/
   plugins/GodotNoctua/          # iOS plugin: GodotNoctua.gdip + {debug,release}.xcframework (built by sdk/ios-plugin/scripts/build.sh 4.x)
 sdk/ios-plugin/                # iOS Objective-C++ bridge source, build + post-export scripts
 export_presets.cfg             # Godot export configs (Android, iOS)
+README.md                      # Overview, run on Android/iOS, updating the SDK
 project.godot                  # Project settings — autoload + EditorPlugin enabled
 ```
 

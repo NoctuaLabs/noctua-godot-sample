@@ -239,7 +239,7 @@ func _build_section_ad_revenue(p: VBoxContainer) -> void:
 	vb.add_child(_lbl("Ad Network", COL_SUBTEXT, 11))
 	vb.add_child(_vspace(4))
 	_ad_source = OptionButton.new()
-	for src in ["admob", "applovin", "ironsource", "unity_ads", "mopub", "vungle", "chartboost"]:
+	for src in ["applovin_max_sdk", "admob_sdk"]:  # the only sources the native SDK accepts
 		_ad_source.add_item(src)
 	_ad_source.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_ad_source.custom_minimum_size.y = INPUT_H
