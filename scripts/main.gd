@@ -26,9 +26,6 @@ const MAX_LOG   := 60
 # ── UI References ──────────────────────────────────────────────────────────
 var _status_dot   : ColorRect
 var _status_label : Label
-var _rev_event    : LineEdit
-var _rev_amount   : LineEdit
-var _rev_currency : OptionButton
 var _order_id     : LineEdit
 var _pur_amount   : LineEdit
 var _ad_source    : OptionButton
@@ -83,7 +80,6 @@ func _build_ui() -> void:
 
 	_build_header(root)
 	_build_section_events(root)
-	_build_section_revenue(root)
 	_build_section_purchase(root)
 	_build_section_ad_revenue(root)
 	_build_section_session(root)
@@ -176,41 +172,6 @@ func _build_section_events(p: VBoxContainer) -> void:
 	var track_btn := _btn_accent("Track", _on_custom_event_pressed)
 	track_btn.custom_minimum_size.x = 88
 	row.add_child(track_btn)
-
-# ── Track Revenue ──────────────────────────────────────────────────────────
-
-func _build_section_revenue(p: VBoxContainer) -> void:
-	var vb := _section(p, "TRACK REVENUE")
-
-	vb.add_child(_lbl("Event Name", COL_SUBTEXT, 11))
-	vb.add_child(_vspace(4))
-	_rev_event = _lineedit("purchase")
-	_rev_event.text = "purchase"
-	vb.add_child(_rev_event)
-
-	vb.add_child(_vspace(10))
-
-	var row := HBoxContainer.new()
-	row.add_theme_constant_override("separation", 8)
-	vb.add_child(row)
-
-	var ac := VBoxContainer.new()
-	ac.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	ac.add_theme_constant_override("separation", 4)
-	row.add_child(ac)
-	ac.add_child(_lbl("Amount", COL_SUBTEXT, 11))
-	_rev_amount = _lineedit("0.99")
-	ac.add_child(_rev_amount)
-
-	var cc := VBoxContainer.new()
-	cc.add_theme_constant_override("separation", 4)
-	row.add_child(cc)
-	cc.add_child(_lbl("Currency", COL_SUBTEXT, 11))
-	_rev_currency = _option_currencies()
-	cc.add_child(_rev_currency)
-
-	vb.add_child(_vspace(12))
-	vb.add_child(_btn_primary("Track Revenue", _on_revenue_pressed))
 
 # ── Track Purchase ─────────────────────────────────────────────────────────
 
@@ -325,16 +286,6 @@ func _on_custom_event_pressed() -> void:
 		return
 	noctua.track_event(ev)
 	_log("EVENT", ev, COL_ACCENT)
-
-func _on_revenue_pressed() -> void:
-	var event  := _rev_event.text.strip_edges()
-	var amount := _rev_amount.text.strip_edges()
-	var cur    := _rev_currency.get_item_text(_rev_currency.selected)
-	if event.is_empty() or amount.is_empty():
-		_log("ERROR", "Event name and amount are required", COL_ERROR)
-		return
-	noctua.track_custom_event_with_revenue(event, amount.to_float(), cur)
-	_log("REVENUE", "%s  %.4f %s" % [event, amount.to_float(), cur], COL_SUCCESS)
 
 func _on_purchase_pressed() -> void:
 	var order  := _order_id.text.strip_edges()
@@ -485,14 +436,6 @@ func _lbl(text: String, color: Color, font_sz: int) -> Label:
 	l.add_theme_color_override("font_color", color)
 	l.add_theme_font_size_override("font_size", font_sz)
 	return l
-
-func _option_currencies() -> OptionButton:
-	var o := OptionButton.new()
-	for c in ["USD", "EUR", "GBP", "JPY", "IDR", "SGD", "MYR", "THB"]:
-		o.add_item(c)
-	o.custom_minimum_size = Vector2(88, INPUT_H)
-	_style_option(o)
-	return o
 
 func _style_option(o: OptionButton) -> void:
 	var s := _sbox_outline(COL_BORDER, COL_INPUT, 6)

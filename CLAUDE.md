@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-A Godot 4 sample/test application for the Noctua SDK. It exercises event tracking, revenue tracking, IAP, ad revenue, and session management via the Noctua Godot plugin and serves as the integration reference for the SDK team.
+A Godot 4 sample/test application for the Noctua SDK. It exercises event tracking, IAP, ad revenue, and session management via the Noctua Godot plugin and serves as the integration reference for the SDK team.
 
 - **Godot**: 4.2+ (plugin v2 format); project last saved with 4.6.1 (`android/.build_version`)
 - **Platform**: Android + iOS
@@ -80,7 +80,6 @@ noctua.track_event_with_params(event: String, params: Dictionary)
 # ── Revenue Tracking ──────────────────────────────────────────────────────────
 noctua.track_purchase(order_id: String, amount: String, currency: String, payload: Dictionary)
 noctua.track_ad_revenue(ad_source: String, revenue: String, currency: String, params: Dictionary)
-noctua.track_custom_event_with_revenue(event_name: String, revenue: float, currency := "USD", payload := {})
 
 # ── Session ───────────────────────────────────────────────────────────────────
 noctua.set_session_tag(session_name: String)
@@ -200,5 +199,5 @@ Manual workflow:
 1. Place `noctuagg.json` (with `"sandboxEnabled": true`) and `google-services.json` in the project root.
 2. Enable the plugin: **Project → Project Settings → Plugins → GodotNoctua**.
 3. Build and run on a physical Android device and/or iPhone (see iOS Build Setup).
-4. Use the in-app UI to fire: track event, track revenue, track purchase, track ad revenue, set session tag.
+4. Use the in-app UI to fire: track event, track purchase, track ad revenue, set session tag.
 5. Verify events appear in the Noctua dashboard.

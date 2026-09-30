@@ -21,7 +21,6 @@ A Godot 3.6 version of this sample lives on GitLab (`evosverse/noctua/godot-noct
 | Section | SDK call |
 |---|---|
 | Track Events | `noctua.track_event("level_start")` and friends, plus a custom event name |
-| Track Revenue | `noctua.track_custom_event_with_revenue(event, amount, currency)` |
 | Track Purchase | `noctua.track_purchase(order_id, amount, "USD", {})` |
 | Track Ad Revenue | `noctua.track_ad_revenue("admob_sdk" / "applovin_max_sdk", revenue, "USD", {})` |
 | Session Tag | `noctua.set_session_tag(tag)` |
