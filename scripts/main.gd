@@ -184,13 +184,15 @@ func _build_section_purchase(p: VBoxContainer) -> void:
 
 	vb.add_child(_lbl("Order ID", COL_SUBTEXT, 11))
 	vb.add_child(_vspace(4))
-	_order_id = _lineedit("ORDER-%d" % randi_range(10000, 99999))
+	_order_id = _lineedit("ORDER-123")
+	_order_id.text = "ORDER-%d" % randi_range(10000, 99999)
 	vb.add_child(_order_id)
 
 	vb.add_child(_vspace(10))
 	vb.add_child(_lbl("Amount (USD)", COL_SUBTEXT, 11))
 	vb.add_child(_vspace(4))
 	_pur_amount = _lineedit("4.99")
+	_pur_amount.text = "4.99"
 	vb.add_child(_pur_amount)
 
 	vb.add_child(_vspace(12))
@@ -215,6 +217,7 @@ func _build_section_ad_revenue(p: VBoxContainer) -> void:
 	vb.add_child(_lbl("Revenue (USD)", COL_SUBTEXT, 11))
 	vb.add_child(_vspace(4))
 	_ad_revenue = _lineedit("0.0025")
+	_ad_revenue.text = "0.0025"
 	vb.add_child(_ad_revenue)
 
 	vb.add_child(_vspace(12))
@@ -233,6 +236,7 @@ func _build_section_session(p: VBoxContainer) -> void:
 	vb.add_child(row)
 
 	_session_tag = _lineedit("main_gameplay")
+	_session_tag.text = "main_gameplay"
 	_session_tag.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	row.add_child(_session_tag)
 
