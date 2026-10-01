@@ -42,6 +42,20 @@ func _ready() -> void:
 	set_anchors_preset(Control.PRESET_FULL_RECT)
 	_build_ui()
 	_refresh_status()
+	if "--noctua-selftest" in OS.get_cmdline_args() or OS.get_environment("NOCTUA_SELFTEST") == "1":
+		_run_selftest()
+
+## QA self-test: launch with --noctua-selftest (or env NOCTUA_SELFTEST=1) to press Level
+## Start, Track Purchase and Track Ad Revenue once, so a device run needs no taps.
+##   Android: adb shell am start -n <package>/com.godot.game.GodotApp -e command_line_params --noctua-selftest
+##   iOS:     xcrun devicectl device process launch --device <id> \
+##              --environment-variables '{"NOCTUA_SELFTEST":"1"}' <bundle-id>
+func _run_selftest() -> void:
+	await get_tree().create_timer(3.0).timeout
+	_log("INFO", "Self-test: level_start, purchase, ad revenue", COL_SUBTEXT)
+	_on_event_pressed("level_start")
+	_on_purchase_pressed()
+	_on_ad_revenue_pressed()
 
 func _refresh_status() -> void:
 	if Engine.has_singleton("GodotNoctua") and noctua.is_initialized():
