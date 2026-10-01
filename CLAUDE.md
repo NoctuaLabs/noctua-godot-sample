@@ -19,23 +19,20 @@ scenes/
 scripts/
   main.gd                      # Demo UI — wires buttons to Noctua SDK calls via `noctua.*`
 addons/
-  GodotNoctua/
-	plugin.cfg                 # EditorPlugin descriptor (Godot 4.2+ v2 format)
-	GodotNoctuaPlugin.gd       # EditorPlugin — registers the export plugin on editor start
-	export_plugin.gd           # EditorExportPlugin — injects AAR + Maven deps at export time
-sdk/                           # git submodule → NoctuaLabs/noctua-godot-sdk (main)
-  gd/noctua.gd                 # GDScript autoload singleton (registered as "noctua")
+  GodotNoctua/                 # SDK editor plugin, unzipped from sdk/scripts/package_addon.sh 4.x
+	plugin.cfg, plugin.gd      # EditorPlugin — autoload, iOS plugin install, setup warnings
+	export_plugin.gd           # EditorExportPlugin — injects AAR + Maven dep + noctuagg.json
+	noctua.gd                  # GDScript autoload singleton (registered as "noctua")
+	BUILD                      # SDK commit the addon was packaged from
+	native/                    # Prebuilt AAR + iOS plugin (.gdignore: not imported)
+sdk/                           # git submodule → NoctuaLabs/noctua-godot-sdk (main); source of the addon
   android-plugin/
 	src/main/…/GodotNoctua.java     # Java plugin bridge (shared)
 	src/godot3/AndroidManifest.xml  # Godot 3.x: plugin v1 meta-data
 	src/godot4/AndroidManifest.xml  # Godot 4.x: plugin v2 meta-data
 	build.gradle                    # Gradle — godot3/godot4 product flavors
-android/
-  plugins/
-	GodotNoctua.godot4Release.aar   # Pre-built plugin for Godot 4.x (EditorExportPlugin uses this)
-	GodotNoctua.godot3.gdap         # Plugin descriptor for Godot 3.x projects
 ios/
-  plugins/GodotNoctua/          # iOS plugin: GodotNoctua.gdip + {debug,release}.xcframework (built by sdk/ios-plugin/scripts/build.sh 4.x)
+  plugins/GodotNoctua/          # iOS plugin, installed by the editor plugin from addons/GodotNoctua/native/ios
 sdk/ios-plugin/                # iOS Objective-C++ bridge source, build + post-export scripts
 export_presets.cfg             # Godot export configs (Android, iOS)
 README.md                      # Overview, run on Android/iOS, updating the SDK
@@ -55,22 +52,25 @@ This project uses the **Godot 4.2+ v2 plugin format**, replacing the deprecated 
 
 | Component | File | Role |
 |-----------|------|------|
-| EditorPlugin | `addons/GodotNoctua/GodotNoctuaPlugin.gd` | Loaded by Godot editor on startup (enabled in Project Settings → Plugins) |
-| EditorExportPlugin | `addons/GodotNoctua/export_plugin.gd` | Called at export time — injects the AAR and Maven dependency |
+| EditorPlugin | `addons/GodotNoctua/plugin.gd` | On editor start: registers the `noctua` autoload, installs the iOS plugin when the `BUILD` stamp changes, warns about missing setup |
+| EditorExportPlugin | `addons/GodotNoctua/export_plugin.gd` | Called at export time — injects the AAR, Maven dependency and `noctuagg.json` |
 | Java bridge | `sdk/android-plugin/…/GodotNoctua.java` | Runtime plugin, discovered via `AndroidManifest.xml` v2 meta-data |
-| AAR binary | `android/plugins/GodotNoctua.godot4Release.aar` | Bundled into the APK at export (debug and release) |
+| AAR binary | `addons/GodotNoctua/native/android/GodotNoctua.godot4Release.aar` | Bundled into the APK at export (debug and release) |
 | iOS plugin | `ios/plugins/GodotNoctua/GodotNoctua.gdip` | Links the GodotNoctua xcframework; registers the same `GodotNoctua` singleton as Android |
 
 The `export_plugin.gd` injects:
-- **Library**: `res://android/plugins/GodotNoctua.godot4Release.aar` (used for both debug and release exports; must be a `res://` path — relative paths resolve under `res://addons/`)
+- **Library**: `res://addons/GodotNoctua/native/android/GodotNoctua.godot4Release.aar` (used for both debug and release exports)
 - **Maven dep**: `com.noctuagames.sdk:noctua-android-sdk:0.35.1` (must match `sdk/android-plugin/build.gradle`)
 - **Repos**: Google Maven + Maven Central
+- **File**: `res://noctuagg.json` into the APK assets (no include filter needed)
+
+Do not edit files under `addons/GodotNoctua/` here: change `sdk/addon/godot4/` and repackage.
 
 ---
 
 ## GDScript API
 
-The SDK auto-registers as the **`noctua`** autoload singleton. No manual initialisation is needed — the SDK reads `noctuagg.json` from the project root automatically.
+The editor plugin registers the **`noctua`** autoload singleton. No manual initialisation is needed — the SDK reads `noctuagg.json` from the project root automatically.
 
 ```gdscript
 # ── Event Tracking ────────────────────────────────────────────────────────────
@@ -140,7 +140,8 @@ JAVA_HOME="/Applications/Android Studio.app/Contents/jbr/Contents/Home" \
   ./gradlew assembleGodot4Release   # for Godot 4.x (used by this sample app)
   # or: ./gradlew assembleRelease   # builds both godot3 + godot4 variants
 
-cp build/outputs/aar/GodotNoctua.godot4Release.aar ../../android/plugins/
+cd ../..
+rm -rf addons/GodotNoctua && unzip -q "$(sdk/scripts/package_addon.sh 4.x)"
 ```
 
 ### Run on device
@@ -154,7 +155,7 @@ cd android/build && ./gradlew assembleDebug
 
 ## iOS Build Setup
 
-1. Build the plugin (once per SDK change): `sdk/ios-plugin/scripts/build.sh 4.x`, then copy `sdk/ios-plugin/bin/4.x/GodotNoctua/` to `ios/plugins/GodotNoctua/`.
+1. Build the plugin (once per SDK change): `sdk/ios-plugin/scripts/build.sh 4.x`, repackage the addon (`rm -rf addons/GodotNoctua && unzip -q "$(sdk/scripts/package_addon.sh 4.x)"`) and reopen the editor, which refreshes `ios/plugins/GodotNoctua/`.
 2. Export with the **iOS** preset (Export Project Only, team `2TFDF8BB6J`, bundle `com.noctuagames.ios.unitysdktest`, min iOS 15.0):
    ```bash
    /Applications/Godot.app/Contents/MacOS/Godot --headless --path . --export-debug "iOS" build/ios/NoctuaGodotSample.ipa

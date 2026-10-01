@@ -18,7 +18,7 @@ config/run/main_scene="res://scenes/main.tscn"
 
 [autoload]
 
-noctua="*res://sdk/gd/noctua.gd"
+noctua="*res://addons/GodotNoctua/noctua.gd"
 
 [display]
 

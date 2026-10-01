@@ -48,7 +48,9 @@ Place the config files (from the Noctua team — never commit them) in the proje
 | `google-services.json` | Firebase, Android — also copy into `android/build/` |
 | `GoogleService-Info.plist` | Firebase, iOS |
 
-Enable the editor plugin once: **Project → Project Settings → Plugins → GodotNoctua**.
+The SDK is installed as the **GodotNoctua editor plugin** (`addons/GodotNoctua/`, already
+enabled in this project). On editor start it registers the `noctua` autoload, installs the
+iOS plugin into `ios/plugins/` and prints a `Noctua:` warning for any missing setup.
 
 ---
 
@@ -57,8 +59,8 @@ Enable the editor plugin once: **Project → Project Settings → Plugins → Go
 1. **Project → Install Android Build Template** (creates `android/build/`).
 2. Export or one-click deploy with the **Android** preset (Gradle build, debug keystore).
 
-The prebuilt bridge is committed at `android/plugins/GodotNoctua.godot4Release.aar`;
-`addons/GodotNoctua/export_plugin.gd` injects it and the Maven dependency at export time.
+The plugin injects the prebuilt bridge (`addons/GodotNoctua/native/android/`), the Maven
+dependency and `noctuagg.json` at export time.
 
 ## Run on iOS
 
@@ -72,7 +74,7 @@ The prebuilt bridge is committed at `android/plugins/GodotNoctua.godot4Release.a
    ```
 3. Open `build/ios/NoctuaGodotSample.xcworkspace`, pick your team, and run on a device.
 
-The prebuilt iOS plugin is committed at `ios/plugins/GodotNoctua/`. Use a real device —
+The plugin installs the prebuilt iOS plugin into `ios/plugins/GodotNoctua/`. Use a real device —
 Godot's official iOS simulator library is x86_64-only and does not run on iOS 26 simulators.
 
 The iOS preset uses bundle ID `com.noctuagames.ios.unitysdktest` (matching the test
@@ -86,10 +88,15 @@ Firebase project); change it and `application/app_store_team_id` for your own ap
 git submodule update --remote sdk
 ```
 
-Then rebuild the native plugins when the bridge changed:
+Rebuild the native plugins if the bridge changed, then repackage and reinstall the addon:
 
-- Android: `cd sdk/android-plugin && ./gradlew assembleGodot4Release`, copy the AAR to `android/plugins/`.
-- iOS: `sdk/ios-plugin/scripts/build.sh 4.x`, copy `sdk/ios-plugin/bin/4.x/GodotNoctua/` to `ios/plugins/`.
+```bash
+(cd sdk/android-plugin && ./gradlew assembleGodot4Release)   # only when the bridge changed
+sdk/ios-plugin/scripts/build.sh 4.x                          # only when the bridge changed
+rm -rf addons/GodotNoctua && unzip -q "$(sdk/scripts/package_addon.sh 4.x)"
+```
+
+Reopen the editor: the plugin sees the new `BUILD` stamp and refreshes `ios/plugins/GodotNoctua/`.
 
 A new iOS SDK version only needs `NOCTUA_IOS_SDK_VERSION=<version>` when running
 `setup_xcode.sh` — no plugin rebuild. See the
