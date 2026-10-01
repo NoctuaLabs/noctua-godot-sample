@@ -45,7 +45,7 @@ Place the config files (from the Noctua team — never commit them) in the proje
 | File | Used by |
 |---|---|
 | `noctuagg.json` | Noctua SDK (both platforms) |
-| `google-services.json` | Firebase, Android — also copy into `android/build/` |
+| `google-services.json` | Firebase, Android. The plugin copies it into `android/build/` and applies the Firebase Gradle plugins at export |
 | `GoogleService-Info.plist` | Firebase, iOS |
 
 The SDK is installed as the **GodotNoctua editor plugin** (`addons/GodotNoctua/`, already
