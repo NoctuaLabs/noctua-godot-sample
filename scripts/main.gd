@@ -44,8 +44,12 @@ func _ready() -> void:
 	_refresh_status()
 
 func _refresh_status() -> void:
-	if Engine.has_singleton("GodotNoctua"):
-		_set_status(COL_SUCCESS, "Native SDK Connected")
+	if Engine.has_singleton("GodotNoctua") and noctua.is_initialized():
+		_set_status(COL_SUCCESS, "Native SDK Initialized")
+	elif Engine.has_singleton("GodotNoctua"):
+		# Plugin loaded but the SDK did not start: every call will be ignored.
+		_set_status(COL_ERROR, "SDK Not Initialized")
+		_log("ERROR", "Noctua SDK failed to initialize: %s. Every tracking call will be ignored." % noctua.get_init_error(), COL_ERROR)
 	elif OS.has_feature("editor"):
 		_set_status(COL_WARNING, "Editor  —  SDK Inactive")
 	else:
@@ -290,8 +294,12 @@ func _on_custom_event_pressed() -> void:
 func _on_purchase_pressed() -> void:
 	var order  := _order_id.text.strip_edges()
 	var amount := _pur_amount.text.strip_edges()
-	if order.is_empty() or amount.is_empty():
-		_log("ERROR", "Order ID and amount are required", COL_ERROR)
+	if order.is_empty():
+		_log("ERROR", "Order ID is empty. Enter an order ID, e.g. ORDER-123.", COL_ERROR)
+		return
+	var amount_error := _amount_error("Amount", amount, "4.99")
+	if not amount_error.is_empty():
+		_log("ERROR", amount_error, COL_ERROR)
 		return
 	noctua.track_purchase(order, amount, "USD", {})
 	_log("PURCHASE", "order=%s  amount=%s USD" % [order, amount], COL_SUCCESS)
@@ -299,8 +307,9 @@ func _on_purchase_pressed() -> void:
 func _on_ad_revenue_pressed() -> void:
 	var source  := _ad_source.get_item_text(_ad_source.selected)
 	var revenue := _ad_revenue.text.strip_edges()
-	if revenue.is_empty():
-		_log("ERROR", "Revenue amount is required", COL_ERROR)
+	var revenue_error := _amount_error("Revenue", revenue, "0.0025")
+	if not revenue_error.is_empty():
+		_log("ERROR", revenue_error, COL_ERROR)
 		return
 	noctua.track_ad_revenue(source, revenue, "USD", {})
 	_log("AD_REV", "%s  %s USD" % [source, revenue], COL_WARNING)
@@ -312,6 +321,18 @@ func _on_session_tag_pressed() -> void:
 		return
 	noctua.set_session_tag(tag)
 	_log("SESSION", "tag set: %s" % tag, COL_ACCENT)
+
+## Returns "" when value is an amount the SDK accepts, otherwise a specific reason.
+## Mirrors the bridge: plain dot-decimals only (optional sign, fraction, exponent).
+func _amount_error(field: String, value: String, example: String) -> String:
+	if value.is_empty():
+		return "%s is empty. Enter a number, e.g. %s." % [field, example]
+	var decimal := RegEx.new()
+	decimal.compile("^[+-]?(\\d+\\.?\\d*|\\.\\d+)([eE][+-]?\\d+)?$")
+	if decimal.search(value) == null:
+		var hint := " Use a dot as the decimal separator." if value.contains(",") else ""
+		return "%s '%s' is not a valid number.%s Example: %s. Not tracked." % [field, value, hint, example]
+	return ""
 
 func _on_clear_log() -> void:
 	_log_rtl.clear()
