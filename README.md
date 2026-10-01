@@ -59,6 +59,10 @@ iOS plugin into `ios/plugins/` and prints a `Noctua:` warning for any missing se
 1. **Project → Install Android Build Template** (creates `android/build/`).
 2. Export or one-click deploy with the **Android** preset (Gradle build, debug keystore).
 
+The app is locked to portrait (`display/window/handheld/orientation=1`) and renders with
+**GL Compatibility**, so it also runs on emulators whose Vulkan support draws a black screen
+(BlueStacks, for example).
+
 The plugin injects the prebuilt bridge (`addons/GodotNoctua/native/android/`), the Maven
 dependency and `noctuagg.json` at export time.
 
